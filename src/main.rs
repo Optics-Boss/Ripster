@@ -1,15 +1,17 @@
 use std::fs::File;
 use std::io;
 use std::io::{BufWriter, Write};
+use std::env;
 
 
 fn main() -> io::Result<()>{
-    let mut name_of_document = String::new();
-    println!("Name of the document");
-    io::stdin().read_line(&mut name_of_document)?;
+    let arguments: Vec<String> = env::args().collect();
+
+    let name_of_document = String::from(&arguments[1]);
 
     let file = File::create(&mut name_of_document.trim())
         .expect("!Error, the file name is incorrect");
+
     let mut writer = BufWriter::new(file);
     
     let mut document = String::new();
