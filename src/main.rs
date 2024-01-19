@@ -1,6 +1,7 @@
 use std::fs::File;
+use std::fs::OpenOptions;
 use std::io;
-use std::io::{BufWriter, Write};
+use std::io::{BufReader, BufRead, BufWriter, Write};
 use std::io::ErrorKind;
 use std::env;
 
@@ -14,18 +15,28 @@ fn main() -> io::Result<()>{
 
     let name_of_document = String::from(&arguments[1]);
 
-    let file = File::open(&mut name_of_document.trim()).unwrap_or_else(|error| {
-        if error.kind() == ErrorKind::NotFound {
-            File::create(&mut name_of_document.trim())
-                .expect("!Error, the file name is incorrect")
-        } else {
-            panic!("Something went wrong");
-        }
-    });
+    let file = OpenOptions::new()
+        .append(true)
+        .read(true)
+        .open(&mut name_of_document.trim())
+        .unwrap_or_else(|error| {
+            if error.kind() == ErrorKind::NotFound {
+                File::create(&mut name_of_document.trim())
+                    .expect("!Error, the file name is incorrect")
+            } else {
+                panic!("Something went wrong");
+            }
+        });
 
+    let read_file = file.try_clone().expect("can't clone file");
+    let reader = BufReader::new(read_file); 
+
+    for line in reader.lines() {
+        println!("{}", line?);
+    }
 
     let mut writer = BufWriter::new(file);
-    
+
     let mut document = String::new();
     println!("Ripster Text Editor");
 
